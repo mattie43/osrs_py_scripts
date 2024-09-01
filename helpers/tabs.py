@@ -20,7 +20,7 @@ spellbooks = [
 class Tabs:
     def __check_for_spellbook(self):
         for img in spellbooks:
-            found = self.find_image_in(img)
+            found = self.find_image(img)
             if found:
                 return found
         return None
@@ -39,7 +39,7 @@ class Tabs:
         if tab_name == "magic":
             image_coords = self.__check_for_spellbook()
         else:
-            image_coords = self.find_image_in(img)
+            image_coords = self.find_image(img)
 
         if not image_coords:
             return print(f"Failed to find image for tab: {tab_name}")

@@ -5,7 +5,6 @@ import time
 from PySide6 import QtWidgets, QtCore
 from helpers.index import HelpersIndex
 
-#Test comment
 
 class App(QtWidgets.QWidget, HelpersIndex):
     def __init__(self):
@@ -83,11 +82,8 @@ class App(QtWidgets.QWidget, HelpersIndex):
             print("show setup..")
             self.activate_window()
             time.sleep(1)
-            # center = self.find_image_in("inventory.png")
-            # self.mouse_move(center["center_x"], center["center_y"])
-            for x in range(10):
-                time.sleep(0.05)
-                self.select_tab("magic")
+            empty = self.is_inventory_slot_empty(2)
+            print("@@@", empty)
 
         button = QtWidgets.QPushButton("Script setup")
         button.clicked.connect(
