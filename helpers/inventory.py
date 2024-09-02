@@ -7,7 +7,7 @@ class Inventory:
         self.inv_loc = self.find_image(img="inventory.png")
 
     def __get_slot_coords(self, slot):
-        # Tl of img + gap between img and slot one + half of inv slot size
+        # tl of img + gap between img and slot one + half of inv slot size
         starting_x = self.inv_loc["tl_x"] + 42 + 15
         starting_y = self.inv_loc["tl_y"] + 11 + 13
 
@@ -31,17 +31,17 @@ class Inventory:
         coords = self.__get_slot_coords(slot)
         self.single_click(coords[0], coords[1], 8)
 
-    # Not working
     def is_inventory_slot_empty(self, slot: int = 1):
         if not self.inv_loc:
             self.__find_inventory()
 
+        rl_x = self.rl_window["x"]
+        rl_y = self.rl_window["y"]
         coords = self.__get_slot_coords(slot)
-        self.mouse_move(coords[0], coords[1])
         region = (
-            coords[0] - 15,
-            coords[1] - 13,
+            coords[0] - 15 + rl_x,
+            coords[1] - 13 + rl_y,
             30,
             26,
         )
-        return self.find_image(img="empty_inv_slot.png", region=region, confidence=0.5)
+        return self.find_image(img="empty_inv_slot.png", region=region)

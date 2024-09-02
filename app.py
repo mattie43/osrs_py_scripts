@@ -81,9 +81,11 @@ class App(QtWidgets.QWidget, HelpersIndex):
             # show setup
             print("show setup..")
             self.activate_window()
-            time.sleep(1)
-            empty = self.is_inventory_slot_empty(2)
-            print("@@@", empty)
+            for x in range(28):
+                time.sleep(1)
+                self.click_inventory_slot(x + 1)
+                empty = self.is_inventory_slot_empty(x + 1)
+                print("empty: ", empty)
 
         button = QtWidgets.QPushButton("Script setup")
         button.clicked.connect(

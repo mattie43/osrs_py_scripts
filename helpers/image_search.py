@@ -50,8 +50,8 @@ class ImageSearch:
         cv2.rectangle(im, top_left, bottom_right, (0, 255, 0), 2)
 
         # Display img
-        if region:
-            cv2.imshow("Matched Image", im)
+        # if region:
+        #     cv2.imshow("Matched Image", im)
 
         return {
             "center_x": center_x,
