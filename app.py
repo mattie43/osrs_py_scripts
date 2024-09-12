@@ -1,25 +1,25 @@
 import sys
 import keyboard
 import threading
-import time
 from PySide6 import QtWidgets, QtCore
-from helpers.index import HelpersIndex
 
 
-class App(QtWidgets.QWidget, HelpersIndex):
+class App(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
 
-        self.ignored_keys = ["space", "tab", "enter", "shift", "ctrl", "alt", "esc"]
-        self.hotkey = None
         self.layout = QtWidgets.QVBoxLayout(self)
 
         self.__create_script_ddl()
         self.__create_options_ddl()
         # Leave any gap between ddl's and buttons
         self.layout.addStretch()
-        self.__create_hotkey_btn()
+        self.__create_start_btn()
         self.__create_script_setup_btn()
+        self.__create_helper_text()
+        self.__create_status_label()
+
+        keyboard.add_hotkey("ctrl+q", self.__stop_curr_script)
 
     def __create_script_ddl(self):
         def handle_change(text):
@@ -39,7 +39,7 @@ class App(QtWidgets.QWidget, HelpersIndex):
             print(text)
 
         text = QtWidgets.QLabel(
-            "Script options", alignment=QtCore.Qt.AlignmentFlag.AlignCenter
+            "Select script options", alignment=QtCore.Qt.AlignmentFlag.AlignCenter
         )
         ddl = QtWidgets.QComboBox()
         ddl.addItems(["None"])
@@ -47,45 +47,18 @@ class App(QtWidgets.QWidget, HelpersIndex):
         self.layout.addWidget(text)
         self.layout.addWidget(ddl)
 
-    def __create_hotkey_btn(self):
-        def click_listener(button):
-            self.__update_button_text(button, "...")
-            threading.Thread(
-                target=self.__wait_for_key, args=(button,), daemon=True
-            ).start()
+    def __create_start_btn(self):
+        def start_script():
+            self.update_status("starting")
+            print("starting script..")
 
-        button = QtWidgets.QPushButton("Set hotkey..")
-        button.clicked.connect(lambda: click_listener(button))
+        button = QtWidgets.QPushButton("Start Script")
+        button.clicked.connect(start_script)
         self.layout.addWidget(button)
-
-    def __wait_for_key(self, button):
-        keyboard.block_key("space")
-        event = keyboard.read_event()
-        if (
-            event.event_type == keyboard.KEY_DOWN
-            and event.name not in self.ignored_keys
-        ):
-            self.hotkey = event.name
-            self.__update_button_text(button, event.name.capitalize())
-        else:
-            self.hotkey = None
-            self.__update_button_text(button, "Set hotkey..")
-
-        keyboard.unblock_key("space")
-
-    def __update_button_text(self, button, text):
-        button.setText(text)
 
     def __create_script_setup_btn(self):
         def click_listener():
-            # show setup
             print("show setup..")
-            self.activate_window()
-            for x in range(28):
-                time.sleep(1)
-                self.click_inventory_slot(x + 1)
-                empty = self.is_inventory_slot_empty(x + 1)
-                print("empty: ", empty)
 
         button = QtWidgets.QPushButton("Script setup")
         button.clicked.connect(
@@ -93,13 +66,36 @@ class App(QtWidgets.QWidget, HelpersIndex):
         )
         self.layout.addWidget(button)
 
+    def __create_helper_text(self):
+        text = QtWidgets.QLabel(
+            "Press ctrl+q to quit the current script.",
+            alignment=QtCore.Qt.AlignmentFlag.AlignCenter,
+        )
+        self.layout.addWidget(text)
+
+    def __create_status_label(self):
+        divider = QtWidgets.QFrame()
+        divider.setFrameShape(QtWidgets.QFrame.HLine)
+        self.status_label = QtWidgets.QLabel(
+            "Script status: Stopped",
+            alignment=QtCore.Qt.AlignmentFlag.AlignCenter,
+        )
+        self.layout.addWidget(divider)
+        self.layout.addWidget(self.status_label)
+
+    def __stop_curr_script(self):
+        print("stopping script..")
+
+    def update_status(self, status):
+        self.status_label.setText(f"Script status: {status}")
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
 
     widget = App()
     widget.setWindowTitle("Mattie's Scripts")
-    widget.setFixedSize(260, 200)
+    widget.setFixedSize(260, 210)
     widget.show()
 
     sys.exit(app.exec())
