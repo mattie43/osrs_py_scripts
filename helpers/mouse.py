@@ -1,11 +1,13 @@
 import pyautogui
 import random
+import math
 from helpers.store import rl
 
 
 def __get_random(rand_amount):
-    rand_x = random.randint(rand_amount * -1, rand_amount)
-    rand_y = random.randint(rand_amount * -1, rand_amount)
+    floor = math.floor(rand_amount)
+    rand_x = random.randint(floor * -1, floor)
+    rand_y = random.randint(floor * -1, floor)
     return [rand_x, rand_y]
 
 

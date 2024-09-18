@@ -1,7 +1,11 @@
 import sys
 import keyboard
-import threading
 from PySide6 import QtWidgets, QtCore
+from helpers.runelite import activate_runelite
+from helpers.find import find_color, find_image
+from helpers.mouse import mouse_move
+from helpers.store import colors
+from helpers.inventory import click_inv_slot, is_inv_slot_empty
 
 
 class App(QtWidgets.QWidget):
@@ -49,21 +53,22 @@ class App(QtWidgets.QWidget):
 
     def __create_start_btn(self):
         def start_script():
+            activate_runelite()
             self.update_status("starting")
-            print("starting script..")
+            for x in range(10):
+                img = is_inv_slot_empty(x + 1)
+                print("img found: ", img)
 
         button = QtWidgets.QPushButton("Start Script")
         button.clicked.connect(start_script)
         self.layout.addWidget(button)
 
     def __create_script_setup_btn(self):
-        def click_listener():
+        def show_setup():
             print("show setup..")
 
         button = QtWidgets.QPushButton("Script setup")
-        button.clicked.connect(
-            lambda: threading.Thread(target=click_listener()).start()
-        )
+        button.clicked.connect(show_setup)
         self.layout.addWidget(button)
 
     def __create_helper_text(self):
@@ -84,6 +89,7 @@ class App(QtWidgets.QWidget):
         self.layout.addWidget(self.status_label)
 
     def __stop_curr_script(self):
+        self.update_status("Stopped")
         print("stopping script..")
 
     def update_status(self, status):

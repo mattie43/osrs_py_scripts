@@ -47,52 +47,63 @@ def __get_template(img):
 
     template_img = cv2.imread(img_path[0], cv2.IMREAD_UNCHANGED)
 
-    if len(template_img.shape) == 3:  # Check if the image is not grayscale
-        template_img = cv2.cvtColor(template_img, cv2.COLOR_BGR2GRAY)
-
     return template_img
 
 
-def find_image(img_name, threshold=0.8):
+def find_image(template_img, region=None, confidence=0.8):
     """
-    Given a template image, returns a tuple of x, y, w, h
+    Given a template image, returns an array of the center x and y if found, else None.
     """
 
-    # Take a screenshot
-    ss = __take_ss()
-    ss_img = numpy.array(ss)  # Convert screenshot to numpy array
+    # Take screenshot
+    ss_img = __take_ss()
+    ss_img = cv2.cvtColor(numpy.array(ss_img), cv2.COLOR_RGB2GRAY)
 
-    if len(ss_img.shape) == 3:  # Check if the screenshot is not grayscale
-        ss_img = cv2.cvtColor(ss_img, cv2.COLOR_RGB2GRAY)
+    if not template_img.endswith(".png"):
+        template_img = f"{template_img}.png"
 
-    template_img = __get_template(img_name)
+    template_img = __get_template(template_img)
 
-    # Template matching using cv2.matchTemplate
+    if not template_img.any():
+        print("No template image found.")
+        return None
+
+    if region:
+        # [x1, y1, x2, y2]
+        # y1:y2, x1:x2
+        a = region[1]
+        b = region[3]
+        c = region[0]
+        d = region[2]
+        template_img = template_img[a:b, c:d]
+
+    template_img = cv2.cvtColor(numpy.array(template_img), cv2.COLOR_RGB2GRAY)
+
     result = cv2.matchTemplate(ss_img, template_img, cv2.TM_CCOEFF_NORMED)
 
-    locations = numpy.where(result >= threshold)
+    locations = numpy.where(result >= confidence)
 
-    # Check if any location found
     if len(locations[0]) > 0:
-        # Get the first match location
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-        x, y = max_loc  # Top-left corner of matched region
-        h, w = template_img.shape[:2]  # Get template image dimensions
+        _, _, _, max_loc = cv2.minMaxLoc(result)
+        tl_x, tl_y = max_loc
+        h, w = template_img.shape[:2]
+        br_x, br_y = (tl_x + w, tl_y + h)
+        center_x = (tl_x + br_x) // 2
+        center_y = (tl_y + br_y) // 2
 
-        return x, y, w, h  # Return the location and size of the matched region
+        return [center_x, center_y]
     else:
         return None  # No match found
 
 
 def find_color(color):
     """
-    Given a BGR color, returns a tuple of x, y, w, h
+    Given a BGR color, returns an array of the center x and y if found, else None.
     """
 
     # Take a screenshot and convert to HSV
-    ss = __take_ss()
-    ss_img = numpy.array(ss)
-    hsv_img = cv2.cvtColor(ss_img, cv2.COLOR_RGB2HSV)  # Convert to HSV
+    ss_img = __take_ss()
+    hsv_img = cv2.cvtColor(numpy.array(ss_img), cv2.COLOR_RGB2HSV)  # Convert to HSV
 
     # Get HSV limits for the color
     lower, upper = __get_limits(color)
@@ -107,11 +118,8 @@ def find_color(color):
     for contour in contours:
         if cv2.contourArea(contour) > 50:
             x, y, w, h = cv2.boundingRect(contour)
-            return (
-                x,
-                y,
-                w,
-                h,
-            )
+            center_x = x + w // 2
+            center_y = y + h // 2
+            return [center_x, center_y]
 
     return None
